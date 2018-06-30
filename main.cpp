@@ -24,10 +24,9 @@ string formatCurrency(double value) {
 }
 
 int main(int argc, char* argv[]) {
-    auto *bankroll = new Bankroll();
-    double startingBankroll = 200, startingBet = 10, bet = 10, roundNumber, maxBankrollBalance = 0;
-    uint failureLimit = 5, verbosity = 0, samplesize = 1;
     bool debug = false;
+    double startingBankroll = 200, startingBet = 10;
+    uint failureLimit = 5, verbosity = 0, samplesize = 1;
     string unmatchedArgument = "";
 
     for (int i = 1; i < argc; i++) {
@@ -42,7 +41,7 @@ int main(int argc, char* argv[]) {
         } else if (strncmp(argv[i], "-r=", strlen("-r=")) == 0) {
             startingBankroll = (uint) stoi(((string) argv[i]).substr(strlen("-r=")));
         } else if (strncmp(argv[i], "-b=", strlen("-b=")) == 0) {
-            startingBet = bet = (uint) stoi(((string) argv[i]).substr(strlen("-b=")));
+            startingBet = (uint) stoi(((string) argv[i]).substr(strlen("-b=")));
         } else if (strncmp(argv[i], "-l=", strlen("-l=")) == 0) {
             failureLimit = (uint) stoi(((string) argv[i]).substr(strlen("-l=")));
         } else if (strcmp(argv[i], "-h") == 0) {
@@ -94,66 +93,81 @@ int main(int argc, char* argv[]) {
         cout << "#####################################" << endl;
     }
 
-    bankroll->cashIn(startingBankroll);
-
-    if (verbosity >= 2) {
-        cout << "Bankroll:\t " << formatCurrency(bankroll->getBalance()) << endl;
-    }
-
-    while (bankroll->cashOut(bet)) {
-        auto attemptNumber = static_cast<uint>(log(bet / startingBet) / log(2) + 1);
-        roundNumber++;
-
+    for (int sampleindex = 0; sampleindex < samplesize; sampleindex++) {
+        auto *bankroll = new Bankroll();
+        double bet = startingBet, maxBankrollBalance = 0;
+        uint roundNumber = 0;
+        bankroll->cashIn(startingBankroll);
 
         if (verbosity >= 2) {
-            cout << "Einsatz:\t-" << formatCurrency(bet) << endl;
+            cout << "Bankroll:\t " << formatCurrency(bankroll->getBalance()) << endl;
         }
 
-        if (Round::execute()) {
-            double winnings = bet * 2;
-            bankroll->cashIn(winnings);
-            bet = startingBet;
+        while (bankroll->cashOut(bet)) {
+            auto attemptNumber = static_cast<uint>(log(bet / startingBet) / log(2) + 1);
+            roundNumber++;
 
             if (verbosity >= 2) {
-                cout << "Gewinn:\t\t+" << formatCurrency(winnings) << endl;
+                cout << "Einsatz:\t-" << formatCurrency(bet) << endl;
             }
-        } else if (attemptNumber < failureLimit) {
-            bet *= 2;
-        } else {
-            bet = startingBet;
+
+            if (Round::execute()) {
+                double winnings = bet * 2;
+                bankroll->cashIn(winnings);
+                bet = startingBet;
+
+                if (verbosity >= 2) {
+                    cout << "Gewinn:\t\t+" << formatCurrency(winnings) << endl;
+                }
+            } else if (attemptNumber < failureLimit) {
+                bet *= 2;
+            } else {
+                bet = startingBet;
+            }
+
+            double currentBankrollBalance = bankroll->getBalance();
+
+            if (maxBankrollBalance < currentBankrollBalance) {
+                maxBankrollBalance = currentBankrollBalance;
+            }
+
+            if (verbosity >= 2) {
+                cout << "\t\t\t------------" << endl;
+                cout << "Bankroll:\t " << formatCurrency(currentBankrollBalance) << endl;
+            }
+        }
+
+        if (verbosity >= 2) {
+            cout << endl;
         }
 
         double currentBankrollBalance = bankroll->getBalance();
 
-        if (maxBankrollBalance < currentBankrollBalance) {
-            maxBankrollBalance = currentBankrollBalance;
-        }
+        if (verbosity > 0) {
+            if (currentBankrollBalance <= 0) {
+                cout << "Der Spieler ging nach " << roundNumber << " Runden pleite." << endl;
+            } else {
+                cout << "Der Spieler müsste nach " << roundNumber << " Runden von seiner Strategie abweichen." << endl;
+                cout << "Er kann den nächsten Einsatz von " << formatCurrency(bet) << " nicht mehr bezahlen." << endl;
+            }
 
-        if (verbosity >= 2) {
-            cout << "\t\t\t------------" << endl;
-            cout << "Bankroll:\t " << formatCurrency(currentBankrollBalance) << endl;
-        }
-    }
-
-    if (verbosity >= 2) {
-        cout << endl;
-    }
-
-    double currentBankrollBalance = bankroll->getBalance();
-
-    if (verbosity > 0) {
-        if (currentBankrollBalance <= 0) {
-            cout << "Der Spieler ging nach " << roundNumber << " Runden pleite." << endl;
+            cout << "Die Bankroll hat über den gesamten Zeitraum ein Maximum von ";
+            cout << formatCurrency(maxBankrollBalance) << " erreicht.";
         } else {
-            cout << "Der Spieler müsste nach " << roundNumber << " Runden von seiner Strategie abweichen." << endl;
-            cout << "Er kann den nächsten Einsatz von " << formatCurrency(bet) << " nicht mehr bezahlen." << endl;
+            if (sampleindex == 0) {
+                cout << R"(Runden,Bankroll,"Nächster Einsatz","Maximale Bankroll")" << endl;
+            }
+
+            cout << roundNumber << "," << currentBankrollBalance << "," << bet << "," << maxBankrollBalance;
         }
 
-        cout << "Die Bankroll hat über den gesamten Zeitraum ein Maximum von ";
-        cout << formatCurrency(maxBankrollBalance) << " erreicht.";
-    } else {
-        cout << R"(Runden,Bankroll,"Nächster Einsatz","Maximale Bankroll")" << endl;
-        cout << roundNumber << "," << currentBankrollBalance << "," << bet << "," << maxBankrollBalance;
+        if ((sampleindex + 1) < samplesize) {
+            if (verbosity > 0) {
+                cout << endl;
+            }
+
+            cout << endl;
+        }
     }
 
     return 0;
