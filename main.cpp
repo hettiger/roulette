@@ -161,13 +161,11 @@ int main(int argc, char* argv[]) {
             cout << roundNumber << "," << currentBankrollBalance << "," << bet << "," << maxBankrollBalance;
         }
 
-        if ((sampleindex + 1) < samplesize) {
-            if (verbosity > 0) {
-                cout << endl;
-            }
-
+        if (verbosity > 0) {
             cout << endl;
         }
+
+        cout << endl;
     }
 
     return 0;
