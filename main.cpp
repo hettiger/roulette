@@ -19,19 +19,6 @@ int main(int argc, char *argv[]) {
     auto *samplesize = new Samplesize(1, default_mutex);
     auto *configuration = new Configuration(argc, argv, samplesize);
 
-    if (configuration->isDebug()) {
-        cout << "#####################################" << endl;
-        cout << "" << endl;
-        cout << "\tDebugging Information" << endl;
-        cout << "\t\tVerbosity:\t\t\t" << configuration->getVerbosity() << endl;
-        cout << "\t\tDurchläufe:\t\t\t" << samplesize->getSize() << endl;
-        cout << "\t\tStartbankroll:\t\t" << configuration->getStartingBankroll() << endl;
-        cout << "\t\tGrundeinsatz:\t\t" << configuration->getStartingBet() << endl;
-        cout << "\t\tMax. Fehlversuch:\t" << configuration->getFailureLimit() << endl;
-        cout << "" << endl;
-        cout << "#####################################" << endl;
-    }
-
     if (configuration->getVerbosity() > 0 || samplesize->getSize() < configuration->getNum_threads()) {
         for (uint sampleindex = 0; sampleindex < samplesize->getSize(); sampleindex++) {
             auto *sample = new Sample((!(bool) sampleindex), configuration, default_mutex);

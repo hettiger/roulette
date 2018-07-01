@@ -3,9 +3,6 @@
 //
 
 #include "Configuration.h"
-#include <iostream>
-
-using namespace std;
 
 bool Configuration::isDebug() const {
     return debug;
@@ -32,8 +29,6 @@ uint Configuration::getNum_threads() const {
 }
 
 Configuration::Configuration(int argc, char **argv, Samplesize *samplesize) {
-    string unmatchedArgument;
-
     for (uint i = 1; i < argc; i++) {
         if (strcmp(argv[i], "-d") == 0) {
             debug = true;
@@ -50,38 +45,61 @@ Configuration::Configuration(int argc, char **argv, Samplesize *samplesize) {
         } else if (strncmp(argv[i], "-l=", strlen("-l=")) == 0) {
             failureLimit = (uint) stoi(((string) argv[i]).substr(strlen("-l=")));
         } else if (strcmp(argv[i], "-h") == 0) {
-            cout << "Willkommen zur Roulette Strategie Simulation." << endl << endl;
-            cout << "Grundsätzlicher Ablauf:" << endl;
-            cout << "\t- Es wird immer auf Rot oder Schwarz gesetzt." << endl;
-            cout << "\t- Du startest mit einem von dir festgelegten Grundeinsatz." << endl;
-            cout << "\t- Verlierst du, verdoppelst du deinen Einsatz." << endl;
-            cout << "\t- Gewinnst du, beginnst du wieder mit deinem Grundeinsatz." << endl;
-            cout << endl;
-            cout << "Du hast in dieser Simulation außerdem die Möglichkeit, ";
-            cout << "eine Maximalanzahl für Fehlversuche festzulegen." << endl;
-            cout << "Das heißt, wenn du z. B. nach 5 Verdopplungen des Einsatzes noch nicht gewonnen hast," << endl;
-            cout << "fängst du wieder mit deinem Grundeinsatz an.";
-            cout << "So riskierst du in einer Runde nicht zuviel..." << endl;
-            cout << endl;
-            cout << "Folgende Argumente können an das Programm übergeben werden:" << endl;
-            cout << "\t-d\t\t\tDebugging Information ausgeben." << endl;
-            cout << "\t-v\t\t\tDas Programm gibt mehr Informationen aus." << endl;
-            cout << "\t-vv\t\t\tDas Programm gibt sämtliche Informationen aus." << endl;
-            cout << "\t-n=1\t\tAnzahl der Durchläufe. (Default = 1)" << endl;
-            cout << "\t-r=200.00\tStartbankroll (Default = 200.00)" << endl;
-            cout << "\t-b=10.00\tGrundeinsatz (Default = 10.00)" << endl;
-            cout << "\t-l=5\t\tMaximal erlaubte Fehlversuche (Default = 5, Ohne Limit = 0)";
-
+            printHelp();
             exit(0);
         } else {
             unmatchedArgument = argv[i];
         }
 
         if (!unmatchedArgument.empty()) {
-            cout << "Das Argument \"" << unmatchedArgument << "\" wird nicht unterstützt." << endl;
-            cout << "Verwenden Sie \"-h\" um die Hilfe auszugeben.";
-
+            printUnmatchedArgumentInformation();
             exit(1);
         }
+
+        if (isDebug()) {
+            printDebuggingInformation(samplesize->getSize());
+        }
     }
+}
+
+void Configuration::printUnmatchedArgumentInformation() {
+    cout << "Das Argument \"" << unmatchedArgument << "\" wird nicht unterstützt." << endl;
+    cout << "Verwenden Sie \"-h\" um die Hilfe auszugeben." << endl;
+}
+
+void Configuration::printHelp() {
+    cout << "Willkommen zur Roulette Strategie Simulation." << endl << endl;
+    cout << "Grundsätzlicher Ablauf:" << endl;
+    cout << "\t- Es wird immer auf Rot oder Schwarz gesetzt." << endl;
+    cout << "\t- Du startest mit einem von dir festgelegten Grundeinsatz." << endl;
+    cout << "\t- Verlierst du, verdoppelst du deinen Einsatz." << endl;
+    cout << "\t- Gewinnst du, beginnst du wieder mit deinem Grundeinsatz." << endl;
+    cout << endl;
+    cout << "Du hast in dieser Simulation außerdem die Möglichkeit, ";
+    cout << "eine Maximalanzahl für Fehlversuche festzulegen." << endl;
+    cout << "Das heißt, wenn du z. B. nach 5 Verdopplungen des Einsatzes noch nicht gewonnen hast," << endl;
+    cout << "fängst du wieder mit deinem Grundeinsatz an. ";
+    cout << "So riskierst du in einer Runde nicht zuviel..." << endl;
+    cout << endl;
+    cout << "Folgende Argumente können an das Programm übergeben werden:" << endl;
+    cout << "\t-d\t\t\tDebugging Information ausgeben." << endl;
+    cout << "\t-v\t\t\tDas Programm gibt mehr Informationen aus." << endl;
+    cout << "\t-vv\t\t\tDas Programm gibt sämtliche Informationen aus." << endl;
+    cout << "\t-n=1\t\tAnzahl der Durchläufe. (Default = 1)" << endl;
+    cout << "\t-r=200.00\tStartbankroll (Default = 200.00)" << endl;
+    cout << "\t-b=10.00\tGrundeinsatz (Default = 10.00)" << endl;
+    cout << "\t-l=5\t\tMaximal erlaubte Fehlversuche (Default = 5, Ohne Limit = 0)" << endl;
+}
+
+void Configuration::printDebuggingInformation(uint samplesize) {
+    cout << "#####################################" << endl;
+    cout << "" << endl;
+    cout << "\tDebugging Information" << endl;
+    cout << "\t\tVerbosity:\t\t\t" << getVerbosity() << endl;
+    cout << "\t\tDurchläufe:\t\t\t" << samplesize << endl;
+    cout << "\t\tStartbankroll:\t\t" << getStartingBankroll() << endl;
+    cout << "\t\tGrundeinsatz:\t\t" << getStartingBet() << endl;
+    cout << "\t\tMax. Fehlversuch:\t" << getFailureLimit() << endl;
+    cout << "" << endl;
+    cout << "#####################################" << endl;
 }
