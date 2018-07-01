@@ -1,10 +1,8 @@
 #include <iostream>
 #include <cmath>
-#include <sstream>
-#include <iomanip>
-#include <locale>
 #include "src/Round.h"
 #include "src/Bankroll.h"
+#include "src/Formatting.h"
 #include <thread>
 #include <mutex>
 
@@ -28,20 +26,6 @@ bool decreaseSamplesize() {
     return isDecreased;
 }
 
-class punct_facet: public std::numpunct<char> {
-    char do_decimal_point() const override { return ','; }
-    char do_thousands_sep() const override { return '.'; }
-};
-
-string formatCurrency(double value) {
-    stringstream ss;
-    ss.imbue(locale(ss.getloc(), new punct_facet));
-    ss << std::fixed << setprecision(2);
-    ss << value << " Euro";
-
-    return ss.str();
-}
-
 void processSample(bool prependHeader, double startingBet, double startingBankroll, uint verbosity, uint failureLimit) {
     auto *bankroll = new Bankroll();
     double bet = startingBet, maxBankrollBalance = 0;
@@ -49,7 +33,7 @@ void processSample(bool prependHeader, double startingBet, double startingBankro
     bankroll->cashIn(startingBankroll);
 
     if (verbosity >= 2) {
-        cout << "Bankroll:\t " << formatCurrency(bankroll->getBalance()) << endl;
+        cout << "Bankroll:\t " << Formatting::formatCurrency(bankroll->getBalance()) << endl;
     }
 
     while (bankroll->cashOut(bet)) {
@@ -57,7 +41,7 @@ void processSample(bool prependHeader, double startingBet, double startingBankro
         roundNumber++;
 
         if (verbosity >= 2) {
-            cout << "Einsatz:\t-" << formatCurrency(bet) << endl;
+            cout << "Einsatz:\t-" << Formatting::formatCurrency(bet) << endl;
         }
 
         if (Round::execute()) {
@@ -66,7 +50,7 @@ void processSample(bool prependHeader, double startingBet, double startingBankro
             bet = startingBet;
 
             if (verbosity >= 2) {
-                cout << "Gewinn:\t\t+" << formatCurrency(winnings) << endl;
+                cout << "Gewinn:\t\t+" << Formatting::formatCurrency(winnings) << endl;
             }
         } else if (attemptNumber < failureLimit) {
             bet *= 2;
@@ -82,7 +66,7 @@ void processSample(bool prependHeader, double startingBet, double startingBankro
 
         if (verbosity >= 2) {
             cout << "\t\t\t------------" << endl;
-            cout << "Bankroll:\t " << formatCurrency(currentBankrollBalance) << endl;
+            cout << "Bankroll:\t " << Formatting::formatCurrency(currentBankrollBalance) << endl;
         }
     }
 
@@ -97,11 +81,12 @@ void processSample(bool prependHeader, double startingBet, double startingBankro
             cout << "Der Spieler ging nach " << roundNumber << " Runden pleite." << endl;
         } else {
             cout << "Der Spieler müsste nach " << roundNumber << " Runden von seiner Strategie abweichen." << endl;
-            cout << "Er kann den nächsten Einsatz von " << formatCurrency(bet) << " nicht mehr bezahlen." << endl;
+            cout << "Er kann den nächsten Einsatz von " << Formatting::formatCurrency(bet);
+            cout << " nicht mehr bezahlen." << endl;
         }
 
         cout << "Die Bankroll hat über den gesamten Zeitraum ein Maximum von ";
-        cout << formatCurrency(maxBankrollBalance) << " erreicht." << endl;
+        cout << Formatting::formatCurrency(maxBankrollBalance) << " erreicht." << endl;
     } else {
         default_mutex.lock();
 
