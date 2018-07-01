@@ -2,29 +2,13 @@
 #include <cmath>
 #include "src/Round.h"
 #include "src/Bankroll.h"
+#include "src/Samplesize.h"
 #include "src/Formatting.h"
 #include <thread>
-#include <mutex>
 
 using namespace std;
 
 std::mutex default_mutex;
-
-uint samplesize = 1;
-
-bool decreaseSamplesize() {
-    default_mutex.lock();
-    bool isDecreased = false;
-
-    if (samplesize > 0) {
-        samplesize--;
-        isDecreased = true;
-    }
-
-    default_mutex.unlock();
-
-    return isDecreased;
-}
 
 void processSample(bool prependHeader, double startingBet, double startingBankroll, uint verbosity, uint failureLimit) {
     auto *bankroll = new Bankroll();
@@ -99,17 +83,18 @@ void processSample(bool prependHeader, double startingBet, double startingBankro
     }
 }
 
-void worker(double startingBet, double startingBankroll, uint verbosity, uint failureLimit) {
-    while (decreaseSamplesize()) {
+void worker(Samplesize samplesize, double startingBet, double startingBankroll, uint verbosity, uint failureLimit) {
+    while (samplesize.decrease()) {
         processSample(false, startingBet, startingBankroll, verbosity, failureLimit);
     }
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
     bool debug = false;
+    auto *samplesize = new Samplesize(1, default_mutex);
     double startingBankroll = 200, startingBet = 10;
     uint failureLimit = 5, verbosity = 0, num_threads = 8;
-    string unmatchedArgument = "";
+    string unmatchedArgument;
 
     for (uint i = 1; i < argc; i++) {
         if (strcmp(argv[i], "-d") == 0) {
@@ -119,7 +104,7 @@ int main(int argc, char* argv[]) {
         } else if (strcmp(argv[i], "-vv") == 0) {
             verbosity = 2;
         } else if (strncmp(argv[i], "-n=", strlen("-n=")) == 0) {
-            samplesize = (uint) stoi(((string) argv[i]).substr(strlen("-n=")));
+            samplesize->setSize((uint) stoi(((string) argv[i]).substr(strlen("-n="))));
         } else if (strncmp(argv[i], "-r=", strlen("-r=")) == 0) {
             startingBankroll = (uint) stoi(((string) argv[i]).substr(strlen("-r=")));
         } else if (strncmp(argv[i], "-b=", strlen("-b=")) == 0) {
@@ -167,7 +152,7 @@ int main(int argc, char* argv[]) {
         cout << "" << endl;
         cout << "\tDebugging Information" << endl;
         cout << "\t\tVerbosity:\t\t\t" << verbosity << endl;
-        cout << "\t\tDurchläufe:\t\t\t" << samplesize << endl;
+        cout << "\t\tDurchläufe:\t\t\t" << samplesize->getSize() << endl;
         cout << "\t\tStartbankroll:\t\t" << startingBankroll << endl;
         cout << "\t\tGrundeinsatz:\t\t" << startingBet << endl;
         cout << "\t\tMax. Fehlversuch:\t" << failureLimit << endl;
@@ -175,25 +160,25 @@ int main(int argc, char* argv[]) {
         cout << "#####################################" << endl;
     }
 
-    if (verbosity > 0 || samplesize < num_threads) {
-        for (uint sampleindex = 0; sampleindex < samplesize; sampleindex++) {
+    if (verbosity > 0 || samplesize->getSize() < num_threads) {
+        for (uint sampleindex = 0; sampleindex < samplesize->getSize(); sampleindex++) {
             processSample((!(bool) sampleindex), startingBet, startingBankroll, verbosity, failureLimit);
         }
     } else {
         // The first sample should be processed single threaded to guarantee CSV header comes first.
         processSample(true, startingBet, startingBankroll, verbosity, failureLimit);
-        decreaseSamplesize();
+        samplesize->decrease();
         thread threads[num_threads - 1];
 
         // Process samples on individual threads
         for (uint threadindex = 0; threadindex < num_threads - 1; threadindex++) {
             threads[threadindex] = thread(
-                worker, startingBet, startingBankroll, verbosity, failureLimit
+                    worker, *samplesize, startingBet, startingBankroll, verbosity, failureLimit
             );
         }
 
         // Put some load on the main thread as well
-        worker(startingBet, startingBankroll, verbosity, failureLimit);
+        worker(*samplesize, startingBet, startingBankroll, verbosity, failureLimit);
 
         // Wait for all threads to complete their work
         for (uint threadindex = 0; threadindex < num_threads - 1; threadindex++) {
