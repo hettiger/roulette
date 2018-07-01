@@ -3,8 +3,8 @@
 #include <sstream>
 #include <iomanip>
 #include <locale>
-#include "Round.h"
-#include "Bankroll.h"
+#include "src/Round.h"
+#include "src/Bankroll.h"
 #include <thread>
 #include <mutex>
 

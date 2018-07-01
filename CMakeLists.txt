@@ -3,4 +3,4 @@ project(Roulette)
 
 set(CMAKE_CXX_STANDARD 11)
 
-add_executable(Roulette main.cpp Round.cpp Round.h Bankroll.cpp Bankroll.h)
+add_executable(Roulette main.cpp src/Round.cpp src/Round.h src/Bankroll.cpp src/Bankroll.h)
