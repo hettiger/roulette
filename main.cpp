@@ -1,92 +1,17 @@
 #include <iostream>
-#include <cmath>
-#include "src/Round.h"
-#include "src/Bankroll.h"
 #include "src/Samplesize.h"
-#include "src/Formatting.h"
 #include "src/Configuration.h"
+#include "src/Sample.h"
 #include <thread>
 
 using namespace std;
 
 std::mutex default_mutex;
 
-void processSample(bool prependHeader, Configuration *configuration) {
-    auto *bankroll = new Bankroll();
-    double bet = configuration->getStartingBet(), maxBankrollBalance = 0;
-    uint roundNumber = 0;
-    bankroll->cashIn(configuration->getStartingBankroll());
-
-    if (configuration->getVerbosity() >= 2) {
-        cout << "Bankroll:\t " << Formatting::formatCurrency(bankroll->getBalance()) << endl;
-    }
-
-    while (bankroll->cashOut(bet)) {
-        auto attemptNumber = static_cast<uint>(log(bet / configuration->getStartingBet()) / log(2) + 1);
-        roundNumber++;
-
-        if (configuration->getVerbosity() >= 2) {
-            cout << "Einsatz:\t-" << Formatting::formatCurrency(bet) << endl;
-        }
-
-        if (Round::execute()) {
-            double winnings = bet * 2;
-            bankroll->cashIn(winnings);
-            bet = configuration->getStartingBet();
-
-            if (configuration->getVerbosity() >= 2) {
-                cout << "Gewinn:\t\t+" << Formatting::formatCurrency(winnings) << endl;
-            }
-        } else if (attemptNumber < configuration->getFailureLimit()) {
-            bet *= 2;
-        } else {
-            bet = configuration->getStartingBet();
-        }
-
-        double currentBankrollBalance = bankroll->getBalance();
-
-        if (maxBankrollBalance < currentBankrollBalance) {
-            maxBankrollBalance = currentBankrollBalance;
-        }
-
-        if (configuration->getVerbosity() >= 2) {
-            cout << "\t\t\t------------" << endl;
-            cout << "Bankroll:\t " << Formatting::formatCurrency(currentBankrollBalance) << endl;
-        }
-    }
-
-    if (configuration->getVerbosity() >= 2) {
-        cout << endl;
-    }
-
-    double currentBankrollBalance = bankroll->getBalance();
-
-    if (configuration->getVerbosity() > 0) {
-        if (currentBankrollBalance <= 0) {
-            cout << "Der Spieler ging nach " << roundNumber << " Runden pleite." << endl;
-        } else {
-            cout << "Der Spieler müsste nach " << roundNumber << " Runden von seiner Strategie abweichen." << endl;
-            cout << "Er kann den nächsten Einsatz von " << Formatting::formatCurrency(bet);
-            cout << " nicht mehr bezahlen." << endl;
-        }
-
-        cout << "Die Bankroll hat über den gesamten Zeitraum ein Maximum von ";
-        cout << Formatting::formatCurrency(maxBankrollBalance) << " erreicht." << endl;
-    } else {
-        default_mutex.lock();
-
-        if (prependHeader) {
-            cout << R"(Runden,Bankroll,"Nächster Einsatz","Maximale Bankroll")" << endl;
-        }
-
-        cout << roundNumber << "," << currentBankrollBalance << "," << bet << "," << maxBankrollBalance << endl;
-        default_mutex.unlock();
-    }
-}
-
 void worker(Samplesize *samplesize, Configuration *configuration) {
     while (samplesize->decrease()) {
-        processSample(false, configuration);
+        auto *sample = new Sample(false, configuration, default_mutex);
+        sample->execute();
     }
 }
 
@@ -109,11 +34,13 @@ int main(int argc, char *argv[]) {
 
     if (configuration->getVerbosity() > 0 || samplesize->getSize() < configuration->getNum_threads()) {
         for (uint sampleindex = 0; sampleindex < samplesize->getSize(); sampleindex++) {
-            processSample((!(bool) sampleindex), configuration);
+            auto *sample = new Sample((!(bool) sampleindex), configuration, default_mutex);
+            sample->execute();
         }
     } else {
         // The first sample should be processed single threaded to guarantee CSV header comes first.
-        processSample(true, configuration);
+        auto *sample = new Sample(true, configuration, default_mutex);
+        sample->execute();
         samplesize->decrease();
         thread threads[configuration->getNum_threads() - 1];
 
