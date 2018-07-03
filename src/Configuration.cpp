@@ -82,24 +82,24 @@ void Configuration::printHelp() {
     cout << "So riskierst du in einer Runde nicht zuviel..." << endl;
     cout << endl;
     cout << "Folgende Argumente können an das Programm übergeben werden:" << endl;
-    cout << "\t-d\t\t\tDebugging Information ausgeben." << endl;
-    cout << "\t-v\t\t\tDas Programm gibt mehr Informationen aus." << endl;
-    cout << "\t-vv\t\t\tDas Programm gibt sämtliche Informationen aus." << endl;
-    cout << "\t-n=1\t\tAnzahl der Durchläufe. (Default = 1)" << endl;
-    cout << "\t-r=200.00\tStartbankroll (Default = 200.00)" << endl;
-    cout << "\t-b=10.00\tGrundeinsatz (Default = 10.00)" << endl;
-    cout << "\t-l=5\t\tMaximal erlaubte Fehlversuche (Default = 5, Ohne Limit = 0)" << endl;
+    cout << "-d" << endl << "Debugging Information ausgeben." << endl << endl;
+    cout << "-v" << endl << "Das Programm gibt mehr Informationen aus." << endl << endl;
+    cout << "-vv" << endl << "Das Programm gibt sämtliche Informationen aus." << endl << endl;
+    cout << "-n=1" << endl << "Anzahl der Durchläufe. (Default = 1)" << endl << endl;
+    cout << "-r=200.00" << endl << "Startbankroll (Default = 200.00)" << endl << endl;
+    cout << "-b=10.00" << endl << "Grundeinsatz (Default = 10.00)" << endl << endl;
+    cout << "-l=5" << endl << "Maximal erlaubte Fehlversuche (Default = 5, Ohne Limit = 0)" << endl;
 }
 
 void Configuration::printDebuggingInformation(uint samplesize) {
     cout << "#####################################" << endl;
     cout << "" << endl;
-    cout << "\tDebugging Information" << endl;
-    cout << "\t\tVerbosity:\t\t\t" << getVerbosity() << endl;
-    cout << "\t\tDurchläufe:\t\t\t" << samplesize << endl;
-    cout << "\t\tStartbankroll:\t\t" << getStartingBankroll() << endl;
-    cout << "\t\tGrundeinsatz:\t\t" << getStartingBet() << endl;
-    cout << "\t\tMax. Fehlversuch:\t" << getFailureLimit() << endl;
+    cout << "Debugging Information" << endl;
+    cout << "\tVerbosity: " << getVerbosity() << endl;
+    cout << "\tDurchläufe: " << samplesize << endl;
+    cout << "\tStartbankroll: " << getStartingBankroll() << endl;
+    cout << "\tGrundeinsatz: " << getStartingBet() << endl;
+    cout << "\tMax. Fehlversuch: " << getFailureLimit() << endl;
     cout << "" << endl;
     cout << "#####################################" << endl;
 }

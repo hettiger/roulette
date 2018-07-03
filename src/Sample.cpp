@@ -54,7 +54,7 @@ void Sample::execute() {
         }
 
         if (configuration->getVerbosity() >= 2) {
-            cout << "\t\t\t------------" << endl;
+            cout << "--------------------------------" << endl;
             cout << "Bankroll:\t " << Formatting::formatCurrency(currentBankrollBalance) << endl;
         }
     }
