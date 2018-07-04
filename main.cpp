@@ -19,7 +19,7 @@ int main(int argc, char *argv[]) {
     auto *samplesize = new Samplesize(1, default_mutex);
     auto *configuration = new Configuration(argc, argv, samplesize);
 
-    if (configuration->getVerbosity() > 0 || samplesize->getSize() < configuration->getNum_threads()) {
+    if (configuration->getVerbosity() > 0 || samplesize->getSize() < configuration->getNumThreads()) {
         for (uint sampleindex = 0; sampleindex < samplesize->getSize(); sampleindex++) {
             auto *sample = new Sample((!(bool) sampleindex), configuration, default_mutex);
             sample->execute();
@@ -29,10 +29,10 @@ int main(int argc, char *argv[]) {
         auto *sample = new Sample(true, configuration, default_mutex);
         sample->execute();
         samplesize->decrease();
-        thread threads[configuration->getNum_threads() - 1];
+        thread threads[configuration->getNumThreads() - 1];
 
         // Process samples on individual threads
-        for (uint threadindex = 0; threadindex < configuration->getNum_threads() - 1; threadindex++) {
+        for (uint threadindex = 0; threadindex < configuration->getNumThreads() - 1; threadindex++) {
             threads[threadindex] = thread(worker, samplesize, configuration);
         }
 
@@ -40,7 +40,7 @@ int main(int argc, char *argv[]) {
         worker(samplesize, configuration);
 
         // Wait for all threads to complete their work
-        for (uint threadindex = 0; threadindex < configuration->getNum_threads() - 1; threadindex++) {
+        for (uint threadindex = 0; threadindex < configuration->getNumThreads() - 1; threadindex++) {
             threads[threadindex].join();
         }
     }

@@ -18,7 +18,8 @@ Sample::Sample(bool prependHeader, Configuration *configuration, mutex &default_
 void Sample::execute() {
     auto *bankroll = new Bankroll();
     double bet = configuration->getStartingBet(), maxBankrollBalance = 0;
-    uint roundNumber = 0;
+    uint numRounds = 0;
+    uint numWonRounds = 0;
     bankroll->cashIn(configuration->getStartingBankroll());
 
     if (configuration->getVerbosity() >= 2) {
@@ -26,8 +27,8 @@ void Sample::execute() {
     }
 
     while (bankroll->cashOut(bet)) {
-        auto attemptNumber = static_cast<uint>(log(bet / configuration->getStartingBet()) / log(2) + 1);
-        roundNumber++;
+        auto numAttempts = static_cast<uint>(log(bet / configuration->getStartingBet()) / log(2) + 1);
+        numRounds++;
 
         if (configuration->getVerbosity() >= 2) {
             cout << "Einsatz:\t-" << Formatting::formatCurrency(bet) << endl;
@@ -35,13 +36,14 @@ void Sample::execute() {
 
         if (Round::execute()) {
             double winnings = bet * 2;
+            numWonRounds++;
             bankroll->cashIn(winnings);
             bet = configuration->getStartingBet();
 
             if (configuration->getVerbosity() >= 2) {
                 cout << "Gewinn:\t\t+" << Formatting::formatCurrency(winnings) << endl;
             }
-        } else if (attemptNumber < configuration->getFailureLimit()) {
+        } else if (numAttempts < configuration->getFailureLimit()) {
             bet *= 2;
         } else {
             bet = configuration->getStartingBet();
@@ -67,9 +69,9 @@ void Sample::execute() {
 
     if (configuration->getVerbosity() > 0) {
         if (currentBankrollBalance <= 0) {
-            cout << "Der Spieler ging nach " << roundNumber << " Runden pleite." << endl;
+            cout << "Der Spieler ging nach " << numRounds << " Runden pleite." << endl;
         } else {
-            cout << "Der Spieler müsste nach " << roundNumber << " Runden von seiner Strategie abweichen." << endl;
+            cout << "Der Spieler müsste nach " << numRounds << " Runden von seiner Strategie abweichen." << endl;
             cout << "Er kann den nächsten Einsatz von " << Formatting::formatCurrency(bet);
             cout << " nicht mehr bezahlen." << endl;
         }
@@ -80,10 +82,11 @@ void Sample::execute() {
         default_mutex->lock();
 
         if (prependHeader) {
-            cout << R"(Runden,Bankroll,"Nächster Einsatz","Maximale Bankroll")" << endl;
+            cout << R"(Runden,Schwarz,Rot,Bankroll,"Nächster Einsatz","Maximale Bankroll")" << endl;
         }
 
-        cout << roundNumber << "," << currentBankrollBalance << "," << bet << "," << maxBankrollBalance << endl;
+        cout << numRounds << "," << numWonRounds << "," << numRounds - numWonRounds << ",";
+        cout << currentBankrollBalance << "," << bet << "," << maxBankrollBalance << endl;
         default_mutex->unlock();
     }
 

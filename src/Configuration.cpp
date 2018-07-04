@@ -24,8 +24,8 @@ uint Configuration::getVerbosity() const {
     return verbosity;
 }
 
-uint Configuration::getNum_threads() const {
-    return num_threads;
+uint Configuration::getNumThreads() const {
+    return numThreads;
 }
 
 Configuration::Configuration(int argc, char **argv, Samplesize *samplesize) {

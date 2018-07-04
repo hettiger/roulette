@@ -17,7 +17,7 @@ class Configuration {
 private:
     bool debug = false;
     double startingBankroll = 200, startingBet = 10;
-    uint failureLimit = 5, verbosity = 0, num_threads = 8;
+    uint failureLimit = 5, verbosity = 0, numThreads = 8;
     string unmatchedArgument;
 
 public:
@@ -31,7 +31,7 @@ public:
 
     uint getVerbosity() const;
 
-    uint getNum_threads() const;
+    uint getNumThreads() const;
 
     Configuration(int argc, char *argv[], Samplesize *samplesize);
 
