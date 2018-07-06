@@ -16,10 +16,9 @@ Sample::Sample(bool prependHeader, Configuration *configuration, mutex &default_
 }
 
 void Sample::execute() {
-    auto *bankroll = new Bankroll();
-    double bet = configuration->getStartingBet(), maxBankrollBalance = 0;
+    auto *bankroll = new Bankroll(configuration->getStartingBankroll());
+    double bet = bankroll->getStartingBet(configuration), maxBankrollBalance = 0;
     uint numRounds = 0, numWonRounds = 0, numAttempts = 0, numBlacks = 0, numZeros = 0, numReds = 0;
-    bankroll->cashIn(configuration->getStartingBankroll());
 
     if (configuration->getVerbosity() >= 2) {
         cout << "Bankroll:\t " << Formatting::formatCurrency(bankroll->getBalance()) << endl;
@@ -41,15 +40,15 @@ void Sample::execute() {
             numWonRounds++;
             numBlacks++;
             bankroll->cashIn(winnings);
-            bet = configuration->getStartingBet();
+            bet = bankroll->getStartingBet(configuration);
 
             if (configuration->getVerbosity() >= 2) {
                 cout << "Gewinn:\t\t+" << Formatting::formatCurrency(winnings) << endl;
             }
         } else if (result == 0) {
             double refund = bet / 2;
-            numZeros++;
             bankroll->cashIn(refund);
+            numZeros++;
             bet *= 2;
 
             if (configuration->getVerbosity() >= 2) {
@@ -60,7 +59,8 @@ void Sample::execute() {
             bet *= 2;
         } else {
             numReds++;
-            bet = configuration->getStartingBet();
+            numAttempts = 0;
+            bet = bankroll->getStartingBet(configuration);
         }
 
         double currentBankrollBalance = bankroll->getBalance();
