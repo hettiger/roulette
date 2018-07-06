@@ -15,9 +15,9 @@ public:
     /**
      * Execute a roulette round betting on black or red
      *
-     * @return Returns whether the round is won or not
+     * @return Returns -1 if the round is lost 0 if you get back 1/2 of the bet and 1 if you won the round
      */
-    static bool execute();
+    static int execute();
 
 private:
     /**

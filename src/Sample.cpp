@@ -18,8 +18,7 @@ Sample::Sample(bool prependHeader, Configuration *configuration, mutex &default_
 void Sample::execute() {
     auto *bankroll = new Bankroll();
     double bet = configuration->getStartingBet(), maxBankrollBalance = 0;
-    uint numRounds = 0;
-    uint numWonRounds = 0;
+    uint numRounds = 0, numWonRounds = 0, numAttempts = 0, numBlacks = 0, numZeros = 0, numReds = 0;
     bankroll->cashIn(configuration->getStartingBankroll());
 
     if (configuration->getVerbosity() >= 2) {
@@ -27,25 +26,40 @@ void Sample::execute() {
     }
 
     while (bankroll->cashOut(bet)) {
-        auto numAttempts = static_cast<uint>(log(bet / configuration->getStartingBet()) / log(2) + 1);
+        numAttempts++;
         numRounds++;
 
         if (configuration->getVerbosity() >= 2) {
             cout << "Einsatz:\t-" << Formatting::formatCurrency(bet) << endl;
         }
 
-        if (Round::execute()) {
+        auto result = Round::execute();
+
+        if (result == 1) {
             double winnings = bet * 2;
+            numAttempts = 0;
             numWonRounds++;
+            numBlacks++;
             bankroll->cashIn(winnings);
             bet = configuration->getStartingBet();
 
             if (configuration->getVerbosity() >= 2) {
                 cout << "Gewinn:\t\t+" << Formatting::formatCurrency(winnings) << endl;
             }
+        } else if (result == 0) {
+            double refund = bet / 2;
+            numZeros++;
+            bankroll->cashIn(refund);
+            bet *= 2;
+
+            if (configuration->getVerbosity() >= 2) {
+                cout << "Erstattung:\t+" << Formatting::formatCurrency(refund) << endl;
+            }
         } else if (numAttempts < configuration->getFailureLimit()) {
+            numReds++;
             bet *= 2;
         } else {
+            numReds++;
             bet = configuration->getStartingBet();
         }
 
@@ -82,10 +96,10 @@ void Sample::execute() {
         default_mutex->lock();
 
         if (prependHeader) {
-            cout << R"(Runden,Schwarz,Rot,Bankroll,"Nächster Einsatz","Maximale Bankroll")" << endl;
+            cout << R"(Runden,Schwarz,Null,Rot,Bankroll,"Nächster Einsatz","Maximale Bankroll")" << endl;
         }
 
-        cout << numRounds << "," << numWonRounds << "," << numRounds - numWonRounds << ",";
+        cout << numRounds << "," << numBlacks << "," << numZeros << "," << numReds << ",";
         cout << currentBankrollBalance << "," << bet << "," << maxBankrollBalance << endl;
         default_mutex->unlock();
     }
