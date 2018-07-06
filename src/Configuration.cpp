@@ -16,6 +16,10 @@ double Configuration::getStartingBet() const {
     return startingBet;
 }
 
+double Configuration::getDynamicFactor() const {
+    return dynamicFactor;
+}
+
 uint Configuration::getFailureLimit() const {
     return failureLimit;
 }
@@ -41,30 +45,28 @@ Configuration::Configuration(int argc, char **argv, Samplesize *samplesize) {
         } else if (strncmp(argv[i], "-n=", strlen("-n=")) == 0) {
             samplesize->setSize((uint) stoi(((string) argv[i]).substr(strlen("-n="))));
         } else if (strncmp(argv[i], "-r=", strlen("-r=")) == 0) {
-            startingBankroll = (uint) stoi(((string) argv[i]).substr(strlen("-r=")));
+            startingBankroll = stod(((string) argv[i]).substr(strlen("-r=")));
         } else if (strncmp(argv[i], "-b=", strlen("-b=")) == 0) {
-            startingBet = (uint) stoi(((string) argv[i]).substr(strlen("-b=")));
+            startingBet = stod(((string) argv[i]).substr(strlen("-b=")));
+        } else if (strncmp(argv[i], "-f=", strlen("-f=")) == 0) {
+            dynamicFactor = stod(((string) argv[i]).substr(strlen("-f=")));
         } else if (strncmp(argv[i], "-l=", strlen("-l=")) == 0) {
             failureLimit = (uint) stoi(((string) argv[i]).substr(strlen("-l=")));
         } else if (strcmp(argv[i], "-h") == 0) {
             printHelp();
             exit(0);
         } else {
-            unmatchedArgument = argv[i];
-        }
-
-        if (!unmatchedArgument.empty()) {
-            printUnmatchedArgumentInformation();
+            printUnmatchedArgumentInformation(argv[i]);
             exit(1);
         }
+    }
 
-        if (isDebug()) {
-            printDebuggingInformation(samplesize->getSize());
-        }
+    if (isDebug()) {
+        printDebuggingInformation(samplesize->getSize());
     }
 }
 
-void Configuration::printUnmatchedArgumentInformation() {
+void Configuration::printUnmatchedArgumentInformation(string unmatchedArgument) {
     cout << "Das Argument \"" << unmatchedArgument << "\" wird nicht unterstützt." << endl;
     cout << "Verwenden Sie \"-h\" um die Hilfe auszugeben." << endl;
 }
@@ -92,18 +94,23 @@ void Configuration::printHelp() {
     cout << "-n=1" << endl << "Anzahl der Durchläufe. (Default = 1)" << endl << endl;
     cout << "-r=200.00" << endl << "Startbankroll (Default = 200.00)" << endl << endl;
     cout << "-b=10.00" << endl << "Grundeinsatz (Default = 10.00)" << endl << endl;
+    cout << "-f=0" << endl;
+    cout << "Faktor für dynamischen Einsatz (Einsatz = Bankroll × Faktor, Ohne Dynamik = 0, Default = 0)";
+    cout << endl << endl;
     cout << "-l=5" << endl << "Maximal erlaubte Fehlversuche (Default = 5, Ohne Limit = 0)" << endl;
 }
 
 void Configuration::printDebuggingInformation(uint samplesize) {
-    cout << "#####################################" << endl;
+    cout << "############################################" << endl;
     cout << "" << endl;
     cout << "Debugging Information" << endl;
     cout << "\tVerbosity: " << getVerbosity() << endl;
+    cout << "\tThreads: " << getNumThreads() << endl;
     cout << "\tDurchläufe: " << samplesize << endl;
     cout << "\tStartbankroll: " << getStartingBankroll() << endl;
     cout << "\tGrundeinsatz: " << getStartingBet() << endl;
+    cout << "\tFaktor für dynamischen Einsatz: " << getDynamicFactor() << endl;
     cout << "\tMax. Fehlversuch: " << getFailureLimit() << endl;
     cout << "" << endl;
-    cout << "#####################################" << endl;
+    cout << "############################################" << endl;
 }
