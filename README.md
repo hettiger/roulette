@@ -13,6 +13,9 @@ Du hast in dieser Simulation außerdem die Möglichkeit, eine Maximalanzahl für
 Das heißt, wenn du z. B. nach 5 Verdopplungen des Einsatzes noch nicht gewonnen hast,
 fängst du wieder mit deinem Grundeinsatz an. So riskierst du in einer Runde nicht zuviel...
 
+> __Achtung:__ 
+> Roulette ist ein Glücksspiel und es gibt keine sinnvolle Strategie um langfristig gegen die Bank zu gewinnen.
+
 ### Installation
 
 ```bash
