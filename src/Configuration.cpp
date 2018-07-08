@@ -58,6 +58,10 @@ Configuration::Configuration(int argc, char **argv, Samplesize *samplesize) {
             startingBet = stod(((string) argv[i]).substr(strlen("-b=")));
         } else if (strncmp(argv[i], "-f=", strlen("-f=")) == 0) {
             dynamicFactor = stod(((string) argv[i]).substr(strlen("-f=")));
+        } else if (strncmp(argv[i], "-s=", strlen("-s=")) == 0) {
+            minBet = stod(((string) argv[i]).substr(strlen("-s=")));
+        } else if (strncmp(argv[i], "-e=", strlen("-e=")) == 0) {
+            maxBet = stod(((string) argv[i]).substr(strlen("-e=")));
         } else if (strncmp(argv[i], "-l=", strlen("-l=")) == 0) {
             failureLimit = (uint) stoi(((string) argv[i]).substr(strlen("-l=")));
         } else if (strcmp(argv[i], "-h") == 0) {
@@ -105,6 +109,8 @@ void Configuration::printHelp() {
     cout << "-f=0" << endl;
     cout << "Faktor für dynamischen Einsatz (Einsatz = Bankroll × Faktor, Ohne Dynamik = 0, Default = 0)";
     cout << endl << endl;
+    cout << "-s=2" << endl << "Min. Einsatz (Default = 2.00)" << endl << endl;
+    cout << "-e=12000" << endl << "Max. Einsatz (Default = 12000.00)" << endl << endl;
     cout << "-l=5" << endl << "Maximal erlaubte Fehlversuche (Default = 5, Ohne Limit = 0)" << endl;
 }
 
@@ -118,6 +124,8 @@ void Configuration::printDebuggingInformation(uint samplesize) {
     cout << "\tStartbankroll: " << getStartingBankroll() << endl;
     cout << "\tGrundeinsatz: " << getStartingBet() << endl;
     cout << "\tFaktor für dynamischen Einsatz: " << getDynamicFactor() << endl;
+    cout << "\tMin. Einsatz: " << getMinBet() << endl;
+    cout << "\tMax. Einsatz: " << getMaxBet() << endl;
     cout << "\tMax. Fehlversuch: " << getFailureLimit() << endl;
     cout << "" << endl;
     cout << "############################################" << endl;
