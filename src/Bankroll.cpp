@@ -27,15 +27,17 @@ double Bankroll::getBalance() const {
 
 double Bankroll::getStartingBet(Configuration *configuration) {
     double bet = configuration->getStartingBet();
+    double minBet = configuration->getMinBet();
+    double maxBet = configuration->getMaxBet();
 
     if (configuration->getDynamicFactor() != 0) {
         bet = floor(this->getBalance() * configuration->getDynamicFactor());
     }
 
-    if (bet < 2.0) {
-        return 2.0;
-    } else if (bet > 12000.0) {
-        return 12000.0;
+    if (bet < minBet) {
+        return minBet;
+    } else if (bet > maxBet) {
+        return maxBet;
     }
 
     return bet;

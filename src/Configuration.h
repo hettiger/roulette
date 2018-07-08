@@ -16,7 +16,7 @@ class Configuration {
 
 private:
     bool debug = false;
-    double startingBankroll = 200, startingBet = 10, dynamicFactor = 0;
+    double startingBankroll = 200, startingBet = 10, dynamicFactor = 0, minBet = 2, maxBet = 12000;
     uint failureLimit = 5, verbosity = 0, numThreads = 8;
     string unmatchedArgument;
 
@@ -28,6 +28,10 @@ public:
     double getStartingBet() const;
 
     double getDynamicFactor() const;
+
+    double getMinBet() const;
+
+    double getMaxBet() const;
 
     uint getFailureLimit() const;
 

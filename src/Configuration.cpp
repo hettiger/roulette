@@ -20,6 +20,14 @@ double Configuration::getDynamicFactor() const {
     return dynamicFactor;
 }
 
+double Configuration::getMinBet() const {
+    return minBet;
+}
+
+double Configuration::getMaxBet() const {
+    return maxBet;
+}
+
 uint Configuration::getFailureLimit() const {
     return failureLimit;
 }
