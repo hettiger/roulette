@@ -6,7 +6,7 @@
 #define ROULETTE_SAMPLESIZE_H
 
 #include <mutex>
-#include <ntsid.h>
+#include <iostream>
 
 class Samplesize {
 

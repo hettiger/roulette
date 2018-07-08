@@ -6,8 +6,8 @@
 #define ROULETTE_CONFIGURATION_H
 
 
-#include <ntsid.h>
 #include <iostream>
+#include <cstring>
 #include "Samplesize.h"
 
 using namespace std;
