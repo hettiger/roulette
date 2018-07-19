@@ -1,1 +1,4 @@
 /cmake-build-debug/
+/*.csv
+/etl/node_modules/
+/etl/**/*.js
