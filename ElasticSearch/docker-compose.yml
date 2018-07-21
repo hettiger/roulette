@@ -1,0 +1,42 @@
+version: "3.6"
+services:
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.2.4
+    container_name: elasticsearch
+    environment:
+      - cluster.name=docker-cluster
+      - network.host=0.0.0.0
+      - discovery.zen.minimum_master_nodes=1
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - ./volumes/elasticshare/data:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+      - 9300:9300
+    networks:
+      - ek
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana-oss:6.2.4
+    container_name: kibana
+    environment:
+      - server.name=kibana
+      - server.host=0
+      - elasticsearch.url=http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    networks:
+      - ek
+    depends_on:
+      - elasticsearch
+
+networks:
+  ek:
+    driver: bridge

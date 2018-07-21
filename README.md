@@ -61,3 +61,37 @@ Max. Einsatz (Default = 12000.00)
 -l=5
 Maximal erlaubte Fehlversuche (Default = 5, Ohne Limit = 0)
 ```
+
+### Analyse
+
+Die Daten können mit ElasticSearch und Kibana analysiert werden.
+
+```bash
+# Start ElasticSearch and Kibana
+cd ~/Roulette/ElasticSearch
+docker-compose up
+```
+
+```bash
+# Install the tool for indexing data
+cd ~/Roulette/etl
+npm install
+node_modules/.bin/tsc
+```
+
+```bash
+# Generate some data
+cd ~/Roulette
+./Roulette -n=1000 > data.csv
+```
+
+```bash
+# Index the data
+cd ~/Roulette/etl
+node ./index.js
+```
+
+1. Öffne Kibana im Browser: [http://localhost:5601](http://localhost:5601)
+2. Erstelle ein Index Pattern für den Index `roulette_v1`
+3. Importiere die Saved Objects aus der Datei `ElasticSearch/kibana-export.json`
+4. Öffne das Dashboard Roulette
